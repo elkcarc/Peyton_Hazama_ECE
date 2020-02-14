@@ -1,0 +1,209 @@
+drop table dependant;
+drop table customer;
+drop table transaction;
+drop table carrier;
+drop table rules;
+drop table refill;
+drop table pharmacy;
+
+create table pharmacy(
+	pharmacyNo int,
+	pharmacyName varchar(50),
+	pharmacyAddress varchar(50),
+	primary key (pharmacyNo));
+	
+create table refill(
+	prescriptionNo int,
+	price int,
+	dose varchar(50),
+	dateTo date,
+	drugname varchar(50),
+	drugNo int,
+	primary key (prescriptionNo));
+	
+create table rules(
+	ruleNo int,
+	planNo int,
+	proceedureName varchar(50),
+	proceedureDescription varchar(50),
+	coverage int,
+	appliesTo int,
+	primary key (ruleNo));
+	
+create table carrier(
+	carrierNo int,
+	carrierName varchar(50),
+	carrierAddress varchar(50),
+	primary key (carrierNo));
+	
+create table transaction(
+	transactionNo int,
+	prescriptionNo int,
+	pharmacyNo int,
+	amount int,
+	payer int,
+	type int,
+	approvalCode int,
+	datePayed date,
+	primary key (transactionNo),
+	foreign key (pharmacyNo) references pharmacy on delete set null,
+	foreign key (prescriptionNo) references refill on delete set null);
+	
+create table customer(
+	customerNo int,
+	carrierNo int,
+	scarrierNo int,
+	prescriptionNo int,
+	pharmacyNo int,
+	planNo int,
+	splanNo int,
+	cName varchar(50),
+	cAddress varchar(50),
+	taxNo int,
+	dateOB date,
+	telephoneNo int,
+	primary key (customerNo),
+	foreign key (carrierNo) references carrier on delete set null,
+	foreign key (scarrierNo) references carrier on delete set null,
+	foreign key (prescriptionNo) references refill on delete set null,
+	foreign key (pharmacyNo) references pharmacy on delete set null,
+	foreign key (planNo) references rules on delete set null,
+	foreign key (splanNo) references rules on delete set null);
+
+create table dependant(
+	dNo int,
+	dAddress varchar(50),
+	dName varchar(50),
+	customerNo int,
+	primary key (dNo),
+	foreign key (customerNo) references customer on delete set null);
+	
+
+
+describe pharmacy;
+describe refill;
+describe rules;
+describe carrier;
+describe transaction;
+describe customer;
+describe dependant;
+
+
+
+insert into pharmacy(pharmacyNo, pharmacyName, pharmacyAddress) values ('120', 'CVS', '3131 Long Street, Miami FL');
+insert into pharmacy(pharmacyNo, pharmacyName, pharmacyAddress) values ('160', 'Rite Aid', '4718 Pine Garden Lane, Tampa FL');
+insert into pharmacy(pharmacyNo, pharmacyName, pharmacyAddress) values ('180', 'Walgreens', '582 Fairfield Road, Zephyrhills FL');
+insert into pharmacy(pharmacyNo, pharmacyName, pharmacyAddress) values ('130', 'CVS', '3054 Waldeck Street, Arlington TX');
+
+insert into refill(prescriptionNo, price, dose, dateTo, drugname, drugNo) values ('10', '20', '100 mg', TO_DATE('17/12/2015', 'DD/MM/YYYY'), 'Xanax', '07');
+insert into refill(prescriptionNo, price, dose, dateTo, drugname, drugNo) values ('12', '20', '30 mg', TO_DATE('18/12/2015', 'DD/MM/YYYY'), 'Cocaine', '06');
+insert into refill(prescriptionNo, price, dose, dateTo, drugname, drugNo) values ('13', '20', '1 mg', TO_DATE('15/05/2015', 'DD/MM/YYYY'), 'Motrin', '05');
+insert into refill(prescriptionNo, price, dose, dateTo, drugname, drugNo) values ('15', '40', '10 mg', TO_DATE('12/12/2025', 'DD/MM/YYYY'), 'Weed', '04');
+insert into refill(prescriptionNo, price, dose, dateTo, drugname, drugNo) values ('45', '50', '200 litres', TO_DATE('17/01/2015', 'DD/MM/YYYY'), 'Vodka', '03');
+insert into refill(prescriptionNo, price, dose, dateTo, drugname, drugNo) values ('14', '60', '1 mg', TO_DATE('15/12/2016', 'DD/MM/YYYY'), 'Lean', '02');
+insert into refill(prescriptionNo, price, dose, dateTo, drugname, drugNo) values ('123', '20', '12 mg', TO_DATE('11/12/2017', 'DD/MM/YYYY'), 'Molly', '01');
+
+insert into rules (ruleNo, planNo, proceedureName, proceedureDescription, coverage, appliesTo) values ('01', '04', 'lessthan100', 'Deductible less than 100 rebate', '10', '0');
+insert into rules (ruleNo, planNo, proceedureName, proceedureDescription, coverage, appliesTo) values ('02', '05', 'lessthan1000', 'Deductible less than 1000 rebate', '10', '0');
+insert into rules (ruleNo, planNo, proceedureName, proceedureDescription, coverage, appliesTo) values ('03', '02', 'oldperson', 'age based discount rebate', '10', '0');
+insert into rules (ruleNo, planNo, proceedureName, proceedureDescription, coverage, appliesTo) values ('04', '03', 'oldperson', 'age based discount rebate', '10', '0');
+insert into rules (ruleNo, planNo, proceedureName, proceedureDescription, coverage, appliesTo) values ('05', '07', '20somethingmale', 'increase price 20', '-20', '0');
+insert into rules (ruleNo, planNo, proceedureName, proceedureDescription, coverage, appliesTo) values ('06', '03', 'Vodka Discount', '10 dollars off', '10', '03');
+
+insert into carrier (carrierNo, carrierName, carrierAddress) values ('01', 'Obeamocare', '1600 Pennsylvania Ave, NW Washington, DC');
+insert into carrier (carrierNo, carrierName, carrierAddress) values ('02', 'Mobambacare', '6114 California St, San Francisco, CA');
+
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('01', '10', '120', '20', '01', '1', '0', TO_DATE('17/12/2015', 'DD/MM/YYYY'));
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('02', '12', '120', '20', '01', '1', '0', TO_DATE('15/12/2014', 'DD/MM/YYYY'));
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('03', '13', '160', '20', '01', '1', '0', TO_DATE('13/12/2014', 'DD/MM/YYYY'));
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('04', '15', '180', '40', '01', '1', '0', TO_DATE('12/12/2015', 'DD/MM/YYYY'));
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('05', '45', '130', '10', '01', '1', '0', TO_DATE('11/04/2019', 'DD/MM/YYYY'));
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('06', '45', '130', '10', '01', '2', '34573646', TO_DATE('11/04/2019', 'DD/MM/YYYY'));
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('07', '45', '130', '10', '01', '2', '34573649', TO_DATE('12/04/2019', 'DD/MM/YYYY'));
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('08', '45', '130', '10', '01', '2', '34573689', TO_DATE('13/04/2019', 'DD/MM/YYYY'));
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('09', '45', '130', '10', '02', '2', '34573668', TO_DATE('14/04/2019', 'DD/MM/YYYY'));
+
+
+insert into customer(customerNo, carrierNo, scarrierNo, prescriptionNo, planNo, splanNo, cName, cAddress, taxNo, dateOB, telephoneNo) values ('01', '01', '02', '10', '01', '03', 'James Smith', '52 Fairfield Road, Zephyrhills FL', '48934', TO_DATE('11/12/1994', 'DD/MM/YYYY'), 1234567890);
+insert into customer(customerNo, carrierNo, scarrierNo, prescriptionNo, planNo, splanNo, cName, cAddress, taxNo, dateOB, telephoneNo) values ('02', '01', '02', '12', '01', '03', 'James Con', '542 Fairfield Road, Zephyrhills FL', '48943534', TO_DATE('11/12/1994', 'DD/MM/YYYY'), 1234562890);
+insert into customer(customerNo, carrierNo, scarrierNo, prescriptionNo, planNo, splanNo, cName, cAddress, taxNo, dateOB, telephoneNo) values ('03', '02', '01', '13', '02', '03', 'Bames Jond', '5275 Fairfield Road, Zephyrhills FL', '348934', TO_DATE('11/12/1964', 'DD/MM/YYYY'), 1234567590);
+insert into customer(customerNo, carrierNo, scarrierNo, prescriptionNo, planNo, splanNo, cName, cAddress, taxNo, dateOB, telephoneNo) values ('04', '02', '01', '45', '03', '02', 'Sames Jmith', '54352 Faid Road, Zephyrhills FL', '4856934', TO_DATE('11/12/1924', 'DD/MM/YYYY'), 1234867890);
+
+insert into dependant(dNo, dAddress, dName, customerNo) values ('01', '54352 Fairdld Road, Zyrhills FL', 'SSames JJmith', '04');
+
+//selects all rules based on plan no and secondary plan and prints them along with the associated carrier
+SELECT customerNo, cName, customer.planNo, rules.planNo, splanNo, customer.carrierNo, scarrierNo, carrierName, proceedureName, proceedureDescription FROM rules, carrier, customer
+WHERE customer.customerNo = 4
+AND customer.planNo = rules.planNo
+AND customer.carrierNo = carrier.carrierNo 
+OR customer.customerNo = 4
+AND customer.splanNo = rules.planNo
+AND customer.scarrierNo = carrier.carrierNo;
+
+//selects all transactions within the last 6 months under customerid 4
+SELECT transaction.transactionNo, transaction.prescriptionNo, transaction.pharmacyNo, amount, payer, type, approvalCode, datePayed, customerNo FROM transaction, customer 
+WHERE customer.customerNo = 4
+AND customer.prescriptionNo = transaction.prescriptionNo
+AND TO_DATE('11/04/2019', 'DD/MM/YYYY') - datePayed <= 6;
+
+//select all distict rules based on name and description
+SELECT DISTINCT proceedureName, proceedureDescription FROM rules;
+
+//select all carrier info and count
+SELECT * FROM carrier;
+SELECT COUNT(carrierNo) FROM carrier;
+
+//select price coverage by plan. it was not specified if rules had to apply to individual prescriptions, so im not doing it
+SELECT SUM(coverage) FROM rules, carrier, customer
+WHERE customer.customerNo = 4
+AND customer.planNo = rules.planNo
+AND customer.carrierNo = carrier.carrierNo
+AND rules.appliesTo = 0 
+OR customer.customerNo = 4
+AND customer.splanNo = rules.planNo
+AND customer.scarrierNo = carrier.carrierNo
+AND rules.appliesTo = 0 
+OR customer.customerNo = 4
+AND customer.splanNo = rules.planNo
+AND customer.scarrierNo = carrier.carrierNo
+AND rules.appliesTo IN
+	(SELECT drugNo FROM customer, refill
+	 WHERE customer.prescriptionNo = refill.prescriptionNo)
+OR customer.planNo = rules.planNo
+AND customer.carrierNo = carrier.carrierNo
+AND rules.appliesTo IN
+	(SELECT drugNo FROM customer, refill
+	 WHERE customer.prescriptionNo = refill.prescriptionNo);
+
+
+//select price coverage by plan, primary only
+SELECT SUM(coverage) FROM rules, carrier, customer
+WHERE customer.customerNo = 4
+AND customer.planNo = rules.planNo
+AND customer.carrierNo = carrier.carrierNo
+AND rules.appliesTo = 0 
+OR customer.planNo = rules.planNo
+AND customer.carrierNo = carrier.carrierNo
+AND rules.appliesTo IN
+	(SELECT drugNo FROM customer, refill
+	 WHERE customer.prescriptionNo = refill.prescriptionNo);
+
+//type indicates who payed. customer 1, insurer 2.
+SELECT SUM(amount) FROM transaction
+WHERE transaction.payer = 1
+AND transaction.type = 2
+AND TO_DATE('11/04/2019', 'DD/MM/YYYY') - datePayed <= 6;
+
+//insert
+insert into transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) values ('10', '45', '130', '10', '02', '2', '34573638', TO_DATE('15/04/2019', 'DD/MM/YYYY'));
+
+//delete
+DELETE FROM customer
+WHERE customerNo = 89;
+
+//update
+UPDATE carrier
+SET carrierAddress = '1601 Pennsylvania Ave, NW Washington, DC'
+WHERE carrierNo = 01;
+
+

@@ -1,0 +1,401 @@
+#include <stdio.h>
+#include <string.h>
+#include <sqlca.h>
+#include <stdlib.h>
+#include <sqlda.h>
+#include <sqlcpr.h>
+
+#define UNAME_LEN      20 
+#define PWD_LEN        50 
+
+typedef char asciz[PWD_LEN]; 
+
+EXEC SQL TYPE asciz IS CHARZ(PWD_LEN) REFERENCE; 
+asciz     username; 
+asciz     password; 
+
+struct q1
+{
+	int customerNo;
+	asciz cName;
+	int cplanNo;
+	int rplanNo;
+	int splanNo;
+	int carrierNo;
+	int scarrierNo;
+	asciz carrierName;
+	asciz proceedureName;
+	asciz proceedureDescription;
+};
+
+struct q2
+{
+	int transactionNo;
+	int prescriptionNo;
+	int pharmacyNo;
+	int amount;
+	int payer;
+	int type;
+	int approvalCode;
+	asciz datePayed;
+	int customerNo;
+};
+
+struct q3
+{
+	asciz proceedureName;
+	asciz proceedureDescription;
+};
+
+struct q4
+{
+	int carrierNo;
+	asciz carrierName;
+	asciz carrierAddress;
+}; 
+
+struct q4p2
+{	
+	int numCarriers;
+}; 
+
+
+struct q5
+{
+	int coverage;
+};
+
+struct q6
+{
+	int coverage;
+};
+
+struct q7
+{
+	int coverage;
+};
+
+
+void sql_error(msg) char *msg;
+{ 
+	char err_msg[512];
+	size_t buf_len, msg_len;
+	EXEC SQL WHENEVER SQLERROR CONTINUE;
+	printf("\n%s\n", msg);
+	buf_len = sizeof (err_msg);
+	sqlglm(err_msg, &buf_len, &msg_len);
+	printf("%.*s\n", msg_len, err_msg);
+	EXEC SQL ROLLBACK RELEASE;
+	exit(EXIT_FAILURE);
+} 
+
+void main() 
+{ 	
+	struct q1 *q1ptr;  
+	if ((q1ptr = (struct q1 *) malloc(sizeof(struct q1))) == 0)
+	{ 
+		fprintf(stderr, "Memory allocation error.\n"); 
+		exit(EXIT_FAILURE); 
+	}
+	struct q2 *q2ptr;  
+	if ((q2ptr = (struct q2 *) malloc(sizeof(struct q2))) == 0)
+	{ 
+		fprintf(stderr, "Memory allocation error.\n"); 
+		exit(EXIT_FAILURE); 
+	}
+	struct q3 *q3ptr;  
+	if ((q3ptr = (struct q3 *) malloc(sizeof(struct q3))) == 0)
+	{ 
+		fprintf(stderr, "Memory allocation error.\n"); 
+		exit(EXIT_FAILURE); 
+	}
+	struct q4 *q4ptr;  
+	if ((q4ptr = (struct q4 *) malloc(sizeof(struct q4))) == 0)
+	{ 
+		fprintf(stderr, "Memory allocation error.\n"); 
+		exit(EXIT_FAILURE); 
+	}
+	struct q4p2 *q4p2ptr;  
+	if ((q4p2ptr = (struct q4p2 *) malloc(sizeof(struct q4p2))) == 0)
+	{ 
+		fprintf(stderr, "Memory allocation error.\n"); 
+		exit(EXIT_FAILURE); 
+	}
+	struct q5 *q5ptr;  
+	if ((q5ptr = (struct q5 *) malloc(sizeof(struct q5))) == 0)
+	{ 
+		fprintf(stderr, "Memory allocation error.\n"); 
+		exit(EXIT_FAILURE); 
+	}
+	struct q6 *q6ptr;  
+	if ((q6ptr = (struct q6 *) malloc(sizeof(struct q6))) == 0)
+	{ 
+		fprintf(stderr, "Memory allocation error.\n"); 
+		exit(EXIT_FAILURE); 
+	}
+	struct q7 *q7ptr;  
+	if ((q7ptr = (struct q7 *) malloc(sizeof(struct q7))) == 0)
+	{ 
+		fprintf(stderr, "Memory allocation error.\n"); 
+		exit(EXIT_FAILURE); 
+	}
+
+	strcpy(username, "pehaece467"); 
+	strcpy(password, "c10086"); 
+	EXEC SQL WHENEVER SQLERROR DO sql_error("ORACLE error--");
+	EXEC SQL CONNECT :username IDENTIFIED BY :password; 
+	printf("\nConnected to ORACLE as user: %s\n", username); 
+
+	 
+	while(1)
+	{
+		printf("Enter 1 for query 1, 2 for query 2 and so on. 0 to exit.:\n");
+		char selection[10];
+		fgets(selection,10,stdin);
+		int choice = atoi(selection);
+		
+		if(choice == 0)
+		{
+			break;
+		}
+		
+		if(choice == 1)
+		{
+			printf("Enter customerNo:\n");
+			fgets(selection,10,stdin);
+			int sel = atoi(selection);
+			//QUERY AND PRINT Q1
+			EXEC SQL DECLARE q1c CURSOR FOR
+				SELECT customerNo, cName, customer.planNo, rules.planNo, splanNo, customer.carrierNo, scarrierNo, carrierName, proceedureName, proceedureDescription FROM rules, carrier, customer
+				WHERE customer.customerNo = :sel
+				AND customer.planNo = rules.planNo
+				AND customer.carrierNo = carrier.carrierNo 
+				OR customer.customerNo = :sel
+				AND customer.splanNo = rules.planNo
+				AND customer.scarrierNo = carrier.carrierNo;
+			EXEC SQL OPEN q1c; 
+			printf("customerNo	cName	customer.planNo	rules.planNo	splanNo	customer.carrierNo	scarrierNo	carrierName	proceedureName	proceedureDescription\n"); 
+			printf("----------	-----	---------------	------------	-------	------------------	----------	-----------	--------------	---------------------\n");
+			EXEC SQL WHENEVER NOT FOUND DO break;
+			for (;;) 
+			{
+				EXEC SQL FETCH q1c INTO :q1ptr; 
+				printf("%d	%s	%d	%d	%d	%d	%d	%s	%s	%s\n", q1ptr->customerNo, q1ptr->cName, q1ptr->cplanNo, q1ptr->rplanNo
+																 , q1ptr->splanNo, q1ptr->carrierNo, q1ptr->scarrierNo, q1ptr->carrierName, q1ptr->proceedureName, q1ptr->proceedureDescription); 
+			}
+			EXEC SQL WHENEVER NOT FOUND CONTINUE;
+			EXEC SQL CLOSE q1c;
+		}
+		
+		if(choice == 2)
+		{
+			printf("Enter customerNo:\n\n");
+			fgets(selection,10,stdin);
+			int sel = atoi(selection);
+			//QUERY AND PRINT Q2
+			EXEC SQL DECLARE q2c CURSOR FOR
+				SELECT transaction.transactionNo, transaction.prescriptionNo, transaction.pharmacyNo, amount, payer, type, approvalCode, datePayed, customerNo FROM transaction, customer 
+				WHERE customer.customerNo = :sel
+				AND customer.prescriptionNo = transaction.prescriptionNo
+				AND TO_DATE('11/04/2019', 'DD/MM/YYYY') - datePayed <= 6;
+			EXEC SQL OPEN q2c;
+			printf("transactionNo	prescriptionNo	pharmacyNo	amount	payer	type	approvalCode	datePayed	customerNo\n");
+			printf("-------------	--------------	----------	------	-----	----	------------	---------	----------\n");
+			EXEC SQL WHENEVER NOT FOUND DO break;
+			for (;;) 
+			{
+				EXEC SQL FETCH q2c INTO :q2ptr;
+				printf("%d	%d	%d	%d	%d	%d	%d	%s	%d	\n", q2ptr->transactionNo, q2ptr->prescriptionNo, q2ptr->pharmacyNo,
+																 q2ptr->amount, q2ptr->payer, q2ptr->type, q2ptr->approvalCode, q2ptr->datePayed, q2ptr->customerNo);
+			}
+			EXEC SQL WHENEVER NOT FOUND CONTINUE;
+			EXEC SQL CLOSE q2c;
+		}
+		
+		if(choice == 3)
+		{
+			//QUERY AND PRINT Q3
+			EXEC SQL DECLARE q3c CURSOR FOR
+				SELECT DISTINCT proceedureName, proceedureDescription FROM rules;
+			EXEC SQL OPEN q3c;
+			printf("proceedureName	proceedureDescription\n");
+			printf("--------------	---------------------\n");
+			EXEC SQL WHENEVER NOT FOUND DO break;
+			for (;;) 
+			{
+				EXEC SQL FETCH q3c INTO :q3ptr; 
+				printf("%s	%s\n", q3ptr->proceedureName, q3ptr->proceedureName);
+			}
+			EXEC SQL WHENEVER NOT FOUND CONTINUE;
+			EXEC SQL CLOSE q3c;
+		}
+		
+		if(choice == 4)
+		{
+			//QUERY AND PRINT Q4
+			EXEC SQL DECLARE q4c CURSOR FOR
+				SELECT * FROM carrier;
+			EXEC SQL OPEN q4c;
+			printf("carrierNo	carrierName	carrierAddress\n");
+			printf("---------	-----------	--------------\n");
+			EXEC SQL WHENEVER NOT FOUND DO break;
+			for (;;) 
+			{
+				EXEC SQL FETCH q4c INTO :q4ptr; 
+				printf("%d	%s	%s\n", q4ptr->carrierNo, q4ptr->carrierName, q4ptr->carrierAddress); 
+			}
+			EXEC SQL WHENEVER NOT FOUND CONTINUE;
+			EXEC SQL CLOSE q4c;
+			
+			EXEC SQL DECLARE q4cp2 CURSOR FOR
+				SELECT COUNT(carrierNo) FROM carrier;
+			EXEC SQL OPEN q4cp2;
+			printf("COUNT\n");
+			printf("-----\n");
+			EXEC SQL FETCH q4cp2 INTO :q4p2ptr; 
+			printf("%d\n", q4p2ptr->numCarriers); 
+			EXEC SQL CLOSE q4cp2;
+			
+		}
+		
+		if(choice == 5)
+		{
+			printf("Enter customerNo:\n");
+			fgets(selection,10,stdin);
+			int sel = atoi(selection);
+			//QUERY AND PRINT Q5
+			EXEC SQL DECLARE q5c CURSOR FOR
+				SELECT SUM(coverage) FROM rules, carrier, customer
+				WHERE customer.customerNo = :sel
+				AND customer.planNo = rules.planNo
+				AND customer.carrierNo = carrier.carrierNo
+				AND rules.appliesTo = 0 
+				OR customer.customerNo = :sel
+				AND customer.splanNo = rules.planNo
+				AND customer.scarrierNo = carrier.carrierNo
+				AND rules.appliesTo = 0 
+				OR customer.customerNo = :sel
+				AND customer.splanNo = rules.planNo
+				AND customer.scarrierNo = carrier.carrierNo
+				AND rules.appliesTo IN
+					(SELECT drugNo FROM customer, refill
+					 WHERE customer.prescriptionNo = refill.prescriptionNo)
+				OR customer.planNo = rules.planNo
+				AND customer.carrierNo = carrier.carrierNo
+				AND rules.appliesTo IN
+					(SELECT drugNo FROM customer, refill
+					 WHERE customer.prescriptionNo = refill.prescriptionNo);
+			EXEC SQL OPEN q5c;
+			printf("Copay\n");
+			printf("-----\n");
+			EXEC SQL FETCH q5c INTO :q5ptr; 
+			printf("%d\n", q5ptr->coverage);
+			EXEC SQL CLOSE q5c;
+		}
+		
+		if(choice == 6)
+		{
+			printf("Enter customerNo:\n");
+			fgets(selection,10,stdin);
+			int sel = atoi(selection);
+			//QUERY AND PRINT Q6
+			EXEC SQL DECLARE q6c CURSOR FOR
+				SELECT SUM(coverage) FROM rules, carrier, customer
+				WHERE customer.customerNo = :sel
+				AND customer.planNo = rules.planNo
+				AND customer.carrierNo = carrier.carrierNo
+				AND rules.appliesTo = 0 
+				OR customer.planNo = rules.planNo
+				AND customer.carrierNo = carrier.carrierNo
+				AND rules.appliesTo IN
+					(SELECT drugNo FROM customer, refill
+					 WHERE customer.prescriptionNo = refill.prescriptionNo);
+			EXEC SQL OPEN q6c;
+			printf("Copay\n");
+			printf("-----\n");
+			EXEC SQL FETCH q6c INTO :q6ptr; 
+			printf("%d\n", q6ptr->coverage);
+			EXEC SQL CLOSE q6c;
+		}
+		
+		if(choice == 7)
+		{
+			printf("Enter carrierNo::\n");
+			fgets(selection,10,stdin);
+			int sel = atoi(selection);
+			//QUERY AND PRINT Q7
+			EXEC SQL DECLARE q7c CURSOR FOR
+				SELECT SUM(amount) FROM transaction
+				WHERE transaction.payer = :sel
+				AND transaction.type = 2
+				AND TO_DATE('11/04/2019', 'DD/MM/YYYY') - datePayed <= 6;
+			EXEC SQL OPEN q7c;
+			printf("Total\n");
+			printf("-----\n");
+			EXEC SQL FETCH q7c INTO :q6ptr; 
+			printf("%d\n", q7ptr->coverage);
+			EXEC SQL CLOSE q7c;
+		}
+		
+		if(choice == 8)
+		{
+			printf("Enter transactionNo:\n");
+			fgets(selection,10,stdin);
+			int sel1 = atoi(selection);
+			printf("Enter prescriptionNo:\n");
+			fgets(selection,10,stdin);
+			int sel2 = atoi(selection);
+			printf("Enter pharmacyNo:\n");
+			fgets(selection,10,stdin);
+			int sel3 = atoi(selection);
+			printf("Enter amount:\n");
+			fgets(selection,10,stdin);
+			int sel4 = atoi(selection);
+			printf("Enter payer:\n");
+			fgets(selection,10,stdin);
+			int sel5 = atoi(selection);
+			printf("Enter type:\n");
+			fgets(selection,10,stdin);
+			int sel6 = atoi(selection);
+			printf("Enter approvalCode:\n");
+			fgets(selection,10,stdin);
+			int sel7 = atoi(selection);
+			EXEC SQL 
+				INSERT INTO transaction(transactionNo, prescriptionNo, pharmacyNo, amount, payer, type, approvalCode, datePayed) 
+											 values (:sel1, :sel2, :sel3, :sel4, :sel5, :sel6, :sel7, TO_DATE('05/05/2019', 'DD/MM/YYYY'));
+		}
+		
+		if(choice == 9)
+		{
+			printf("customerNo:\n");
+			fgets(selection,10,stdin);
+			int sel = atoi(selection);
+			EXEC SQL
+				DELETE FROM customer
+				WHERE customerNo = :sel;
+			printf("Deleted customerNo %d\n", sel);
+		}
+		
+		if(choice == 10)
+		{
+			printf("Enter carrierNo:\n");
+			fgets(selection,10,stdin);
+			int sel = atoi(selection);
+			printf("Enter new address:\n");
+			char addr[51];
+			fgets(addr,50,stdin);
+			EXEC SQL
+				UPDATE carrier
+				SET carrierAddress = :addr
+				WHERE carrierNo = :sel;
+			printf("Updated carrier %d\n", sel);
+		}
+}
+	
+
+
+	printf("\nGOOD-BYE!!\n\n");
+	EXEC SQL COMMIT WORK RELEASE;
+	exit(EXIT_SUCCESS);
+} 
+
